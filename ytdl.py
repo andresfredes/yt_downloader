@@ -1,4 +1,5 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLabel, QPushButton
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QLabel, QPushButton,
+    QLineEdit, QHBoxLayout, QVBoxLayout, QWidget)
 
 from config import *
 import sys
@@ -9,20 +10,35 @@ class YTDL_Window(QMainWindow):
         self.initUI()
 
     def initUI(self):
+        ui = Central_Widget()
+        self.setCentralWidget(ui)
         self.setGeometry(WIN["X"], WIN["Y"], WIN["WIDTH"], WIN["HEIGHT"])
         self.setWindowTitle("YouTube downloader")
 
-        self.urlLabel = QLabel(self)
-        self.urlLabel.move(URL_LABEL["X"], URL_LABEL["Y"])
-        self.urlLabel.setText("Enter YouTube URLs below:")
-        self.urlLabel.adjustSize()
+class Central_Widget(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
 
-        self.dl_button = QPushButton(self)
-        self.dl_button.move(DL_BUTTON["X"], DL_BUTTON["Y"])
-        self.dl_button.setText("Download")
-        self.dl_button.clicked.connect(self.download)
+    def initUI(self):
+        vbox = QVBoxLayout(self)
 
-    def download():
+        url_Label = QLabel(self)
+        url_Label.setText("Enter YouTube URLs below:")
+        url_Label.adjustSize()
+        vbox.addWidget(url_Label)
+
+        textbox = QLineEdit(self)
+        vbox.addWidget(textbox)
+
+        dl_button = QPushButton(self)
+        dl_button.setText("Download")
+        dl_button.clicked.connect(self.download)
+        vbox.addWidget(dl_button)
+
+        self.setLayout(vbox)
+
+    def download(self):
         pass
 
 def window():
