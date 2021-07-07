@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton, QMessageBox,
     QLineEdit, QHBoxLayout, QVBoxLayout, QWidget, QFileDialog)
+from PyQt5.QtCore import QObject, QThread
 
-from youtube import *
+from worker import Worker
 from config import *
 
 class YTDL_Window(QMainWindow):
@@ -19,52 +20,89 @@ class Central_Widget(QWidget):
     def __init__(self):
         super().__init__()
         self.path = ""
+        self.urls = []
         self.initUI()
 
     def initUI(self):
-        vbox = QVBoxLayout(self)
+        rows = QVBoxLayout()
 
-        url_Label = QLabel(self)
-        url_Label.setText("Enter YouTube URLs below:")
+        url_Label = QLabel()
+        url_Label.setText("Enter one or more YouTube URLs below:")
         url_Label.adjustSize()
-        vbox.addWidget(url_Label)
+        rows.addWidget(url_Label)
 
-        textbox = QLineEdit(self)
-        vbox.addWidget(textbox)
+        for index in range(1, 1 + MAX_URLS):
+            layout = URL_Layout(index)
+            self.urls.append(layout)
+            rows.addLayout(layout)
 
-        path_button = QPushButton(self)
+        self.info_Label = QLabel()
+        self.info_Label.setText("")
+        self.info_Label.adjustSize()
+        rows.addWidget(self.info_Label)
+
+        buttons = QHBoxLayout()
+
+        path_button = QPushButton()
         path_button.setText("Choose download location")
         path_button.clicked.connect(self.get_path)
-        vbox.addWidget(path_button)
+        buttons.addWidget(path_button)
 
-        dl_button = QPushButton(self)
-        dl_button.setText("Download")
-        dl_button.clicked.connect(self.download)
-        vbox.addWidget(dl_button)
+        self.dl_button = QPushButton()
+        self.dl_button.setText("Download")
+        self.dl_button.setEnabled(False)
+        self.dl_button.clicked.connect(self.download)
+        buttons.addWidget(self.dl_button)
 
-        self.setLayout(vbox)
+        rows.addStretch()
+        rows.addLayout(buttons)
+
+        self.setLayout(rows)
 
     def get_path(self):
         dir_picker = QFileDialog()
         self.path = dir_picker.getExistingDirectory(None, "Choose a folder: ")
+        if self.path != "":
+            self.dl_button.setEnabled(True)
 
     def download(self):
-        if self.path == "":
-            self.no_path_warning()
+        self.dl_button.setEnabled(False)
+        self.info_Label.setText("Downloading...")
 
-    def no_path_warning(self):
-        choose_button = Choose_Button(self)
+        self.thread = QThread()
+        self.worker = Worker(self.urls, self.path)
+        self.worker.moveToThread(self.thread)
+        self.thread.started.connect(self.worker.run)
+        self.worker.finished.connect(self.thread.quit)
+        self.worker.finished.connect(self.worker.deleteLater)
+        self.thread.finished.connect(self.thread.deleteLater)
+        self.worker.warning.connect(self.warning)
+        self.thread.start()
 
-        warning = QMessageBox.warning(
-            None,
-            "Download location not selected",
-            "Download location not selected",
-            choose_button | QMessageBox.Ok,
-            choose_button
+        self.thread.finished.connect(
+            lambda: self.dl_button.setEnabled(True)
+        )
+        self.thread.finished.connect(
+            lambda: self.info_Label.setText("Download complete!")
         )
 
-class Choose_Button(QPushButton):
-    def __init__(self, widget):
-        super.__init__()
-        self.setText("Choose")
-        self.clicked.connect(widget.get_path)
+    def warning(self, index):
+        title = "Download error"
+        message = "Video #" + str(index) + " unavailable"
+        warning = QMessageBox.warning(
+            None, title, message, QMessageBox.Ok, QMessageBox.Ok)
+
+class URL_Layout(QHBoxLayout):
+    def __init__(self, index):
+        super().__init__()
+        self.index = index
+
+        index_label = QLabel()
+        index_label.setText(str(self.index))
+        self.addWidget(index_label)
+
+        self.textbox = QLineEdit()
+        self.addWidget(self.textbox)
+
+    def get_url(self):
+        return self.textbox.text()
