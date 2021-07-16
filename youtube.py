@@ -5,11 +5,18 @@ class Downloader(object):
     def __init__(self):
         super().__init__()
 
-    def download(self, url, path, index=0):
+    def download(self, url, path, stream_type, index=0):
         yt = YouTube(url)
         prefix = str(index) + "_"
         safe_title = prefix + safe_filename(yt.title, max_length=30)
-        yt.streams.get_highest_resolution().download(path, safe_title)
+        stream = yt.streams
+        if stream_type == "Audio":
+            stream = stream.filter(only_audio=True).first()
+        elif stream_type == "Video":
+            stream = yt.streams.filter(only_video=True).first()
+        else:
+            stream = yt.streams.get_highest_resolution()
+        stream.download(path, safe_title)
 
     def cli_run(self):
         url = input("Enter Youtube URL: ")

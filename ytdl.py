@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QApplication
 
-from gui import YTDL_Window, Central_Widget
+from gui import YTDL_Window
 
 import sys
 

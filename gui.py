@@ -1,5 +1,6 @@
 from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton, QMessageBox,
-    QLineEdit, QHBoxLayout, QVBoxLayout, QWidget, QFileDialog)
+    QLineEdit, QHBoxLayout, QVBoxLayout, QWidget, QFileDialog, QRadioButton,
+    QButtonGroup)
 from PyQt5.QtCore import QObject, QThread
 
 from worker import Worker
@@ -96,6 +97,7 @@ class URL_Layout(QHBoxLayout):
     def __init__(self, index):
         super().__init__()
         self.index = index
+        self.stream = "V+A"
 
         index_label = QLabel()
         index_label.setText(str(self.index))
@@ -104,5 +106,36 @@ class URL_Layout(QHBoxLayout):
         self.textbox = QLineEdit()
         self.addWidget(self.textbox)
 
+        self.r_group = QButtonGroup()
+        r1 = Custom_Radio("Audio", self)
+        self.r_group.addButton(r1)
+        self.addWidget(r1)
+        r2 = Custom_Radio("Video", self)
+        self.r_group.addButton(r2)
+        self.addWidget(r2)
+        r3 = Custom_Radio("V+A", self)
+        self.r_group.addButton(r3)
+        r3.setChecked(True)
+        self.addWidget(r3)
+
+    def set_stream(self, text):
+        self.stream = text
+
+    def get_stream_type(self):
+        return self.stream
+
     def get_url(self):
         return self.textbox.text()
+
+class Custom_Radio(QRadioButton):
+    def __init__(self, text, layout):
+        super().__init__()
+        self.layout = layout
+        self.text = text
+        self.setText(self.text)
+        self.toggled.connect(self.on_clicked)
+
+    def on_clicked(self):
+        radio = self.sender()
+        if radio.isChecked():
+            self.layout.set_stream(self.text)
