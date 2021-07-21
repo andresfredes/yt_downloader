@@ -15,10 +15,11 @@
 #     You should have received a copy of the GNU General Public License
 #     along with yt_downloader.  If not, see <https://www.gnu.org/licenses/>.
 
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton, QMessageBox,
     QLineEdit, QHBoxLayout, QVBoxLayout, QWidget, QFileDialog, QRadioButton,
     QButtonGroup)
-from PyQt5.QtCore import QObject, QThread
+from PyQt5.QtCore import QObject, QThread, Qt
 
 from worker import Worker
 from config import *
@@ -44,20 +45,32 @@ class Central_Widget(QWidget):
     def initUI(self):
         rows = QVBoxLayout()
 
-        url_Label = QLabel()
-        url_Label.setText("Enter one or more YouTube URLs below:")
-        url_Label.adjustSize()
-        rows.addWidget(url_Label)
+        url_label = QLabel()
+        url_label.setText("Enter one or more YouTube URLs below:")
+        url_label.adjustSize()
+        rows.addWidget(url_label)
 
         for index in range(1, 1 + MAX_URLS):
             layout = URL_Layout(index)
             self.urls.append(layout)
             rows.addLayout(layout)
 
-        self.info_Label = QLabel()
-        self.info_Label.setText("")
-        self.info_Label.adjustSize()
-        rows.addWidget(self.info_Label)
+        self.info_label = QLabel()
+        self.info_label.setText("")
+        self.info_label.adjustSize()
+        self.info_label.setAlignment(Qt.AlignCenter)
+        font = QFont()
+        font.setPointSize(18)
+        self.info_label.setFont(font)
+        rows.addWidget(self.info_label)
+
+        rows.addStretch()
+
+        contact_label = QLabel()
+        contact_label.setText("Send feedback to: andres.hector.fredes@gmail.com")
+        contact_label.adjustSize()
+        contact_label.setAlignment(Qt.AlignCenter)
+        rows.addWidget(contact_label)
 
         buttons = QHBoxLayout()
 
@@ -71,8 +84,6 @@ class Central_Widget(QWidget):
         self.dl_button.setEnabled(False)
         self.dl_button.clicked.connect(self.download)
         buttons.addWidget(self.dl_button)
-
-        rows.addStretch()
         rows.addLayout(buttons)
 
         self.setLayout(rows)
