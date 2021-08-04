@@ -25,7 +25,8 @@ class Downloader(object):
     def download(self, url, path, stream_type, index=0):
         yt = YouTube(url)
         prefix = str(index) + "_"
-        safe_title = prefix + safe_filename(yt.title, max_length=30)
+        suffix = ".mp4"
+        safe_title = f"{prefix}{safe_filename(yt.title, max_length=30)}{suffix}"
         stream = yt.streams
         if stream_type == "Audio":
             stream = stream.filter(only_audio=True).first()
