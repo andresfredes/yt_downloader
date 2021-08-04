@@ -96,7 +96,7 @@ class Central_Widget(QWidget):
 
     def download(self):
         self.dl_button.setEnabled(False)
-        self.info_Label.setText("Downloading...")
+        self.info_label.setText("Downloading...")
 
         self.thread = QThread()
         self.worker = Worker(self.urls, self.path)
@@ -112,7 +112,7 @@ class Central_Widget(QWidget):
             lambda: self.dl_button.setEnabled(True)
         )
         self.thread.finished.connect(
-            lambda: self.info_Label.setText("Download complete!")
+            lambda: self.info_label.setText("Download complete!")
         )
 
     def warning(self, index):

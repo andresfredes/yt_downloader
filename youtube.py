@@ -39,7 +39,7 @@ class Downloader(object):
         url = input("Enter Youtube URL: ")
         path = input("Enter download path: ")
         try:
-            self.download(url, path)
+            self.download(url, path, "V+A")
         except Exception as e:
             print(e)
             print("Video is not available for download")
