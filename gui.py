@@ -15,34 +15,50 @@
 #     You should have received a copy of the GNU General Public License
 #     along with yt_downloader.  If not, see <https://www.gnu.org/licenses/>.
 
+"""gui.py: The Graphical User Interface for YouTube Downloader.
+
+Uses Qt for creation of the GUI elements as well as handling the secondary
+thread required when downloading videos to avoid locking the UI.
+"""
+
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import (QMainWindow, QLabel, QPushButton, QMessageBox,
     QLineEdit, QHBoxLayout, QVBoxLayout, QWidget, QFileDialog, QRadioButton,
     QButtonGroup)
-from PyQt5.QtCore import QObject, QThread, Qt
+from PyQt5.QtCore import QThread, Qt
 
 from worker import Worker
 from config import *
 
 class YTDL_Window(QMainWindow):
+    """Main window for the YouTube Downloader program.
+
+    Holds the Central Widget, which in turns hosts the rest of the widgets.
+    """
     def __init__(self):
         super(YTDL_Window, self).__init__()
-        self.initUI()
+        self._initUI()
 
-    def initUI(self):
+    def _initUI(self):
         ui = Central_Widget()
         self.setCentralWidget(ui)
         self.setGeometry(WIN["X"], WIN["Y"], WIN["WIDTH"], WIN["HEIGHT"])
         self.setWindowTitle("YouTube downloader")
 
 class Central_Widget(QWidget):
+    """The host to the widgets that create bulk of the UI.
+
+    Hosts a set of text boxes allowing for URL entry, radio buttons to select
+    between stream types and a couple of buttons to allow the user to choose a
+    download location and to ultimately start the download.
+    """
     def __init__(self):
         super().__init__()
         self.path = ""
         self.urls = []
-        self.initUI()
+        self._initUI()
 
-    def initUI(self):
+    def _initUI(self):
         rows = QVBoxLayout()
 
         url_label = QLabel()
@@ -67,7 +83,9 @@ class Central_Widget(QWidget):
         rows.addStretch()
 
         contact_label = QLabel()
-        contact_label.setText("Send feedback to: andres.hector.fredes@gmail.com")
+        contact_label.setText(
+            "Send feedback to: andres.hector.fredes@gmail.com"
+        )
         contact_label.adjustSize()
         contact_label.setAlignment(Qt.AlignCenter)
         rows.addWidget(contact_label)
@@ -89,12 +107,28 @@ class Central_Widget(QWidget):
         self.setLayout(rows)
 
     def get_path(self):
+        """Activated by the path button, to allow a user to choose the download
+        location.
+
+        Also triggers the activation of the usually disabled "download" button,
+        when a suitable path has been selected.
+        """
         dir_picker = QFileDialog()
         self.path = dir_picker.getExistingDirectory(None, "Choose a folder: ")
         if self.path != "":
             self.dl_button.setEnabled(True)
 
     def download(self):
+        """Starts the downloads themselves.
+
+        The host button to this function is disabled by default and will only
+        become available for use when the user has chosen a download location.
+        To avoid accidental double-clicks, the download button is also disabled
+        during downloads and a simple "Downloading..." message is presented.
+
+        Download processing is pushed to a secondary thread to avoid locking the
+        UI.
+        """
         self.dl_button.setEnabled(False)
         self.info_label.setText("Downloading...")
 
@@ -116,12 +150,28 @@ class Central_Widget(QWidget):
         )
 
     def warning(self, index):
+        """Generates a pop-up warning that a download failed.
+
+        Triggered by an incoming signal from the secondary thread.
+
+        Args:
+            index (int): The index of the video that failed.
+        """
         title = "Download error"
         message = "Video #" + str(index) + " unavailable"
         warning = QMessageBox.warning(
             None, title, message, QMessageBox.Ok, QMessageBox.Ok)
 
 class URL_Layout(QHBoxLayout):
+    """A layout composed of a URL textbox, label and radio button group.
+
+    This allows for all of the controls associated with each video download to 
+    be inserted into the UI together, and therefore many URLs can be collected
+    without much additional code.
+
+    Args:
+        index (int): Number for id'ing elements and naming output files.
+    """
     def __init__(self, index):
         super().__init__()
         self.index = index

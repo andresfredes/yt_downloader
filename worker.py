@@ -15,11 +15,28 @@
 #     You should have received a copy of the GNU General Public License
 #     along with yt_downloader.  If not, see <https://www.gnu.org/licenses/>.
 
-from PyQt5.QtCore import QObject, QThread, pyqtSignal
+"""worker.py: A simple worker function to allow the gui to perform slow
+downloads without locking the interface.
+"""
 
+from PyQt5.QtCore import QObject, pyqtSignal
 from youtube import Downloader
 
 class Worker(QObject):
+    """Simple worker class to manage the downloads on a different thread.
+
+    Thread management is done by the GUI itself, but this is the object that
+    will get passed to the secondary thread to manage the slow tasks. This uses
+    a Downloader object from youtube.py
+
+    Class variables:
+        finished (pyqtSignal): Signal emitted to main thread when task complete.
+        warning (pyqtSignal): Signal emitted to main thread when task failed.
+
+    Args:
+        urls (list): collection of strings representing the video URLs.
+        path (str): the path to download videos to.
+    """
     finished = pyqtSignal()
     warning = pyqtSignal(int)
 
@@ -30,6 +47,9 @@ class Worker(QObject):
         self.dl = Downloader()
 
     def run(self):
+        """Activates the downloading of videos passed in during the worker's
+        instantiation.
+        """
         for url_holder in self.urls:
             url = url_holder.get_url()
             stream_type = url_holder.get_stream_type()

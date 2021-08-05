@@ -15,14 +15,36 @@
 #     You should have received a copy of the GNU General Public License
 #     along with yt_downloader.  If not, see <https://www.gnu.org/licenses/>.
 
+"""youtube.py: The core downloading logic and main run file when using the
+Command-Line Interface only.
+
+Uses pytube to handle all connection to YouTube.
+"""
+
 from pytube import YouTube
 from pytube.helpers import safe_filename
 
 class Downloader(object):
+    """Handles the downloading from youtube and saving to local filesystem.
+    """
     def __init__(self):
         super().__init__()
 
     def download(self, url, path, stream_type, index=0):
+        """Downloads the video at the specified YouTube URL to the specified
+        location.
+
+        download can differentiate between audio, video or v+a by using the
+        stream_type parameter.
+
+        Args:
+            url (str): URL to YouTube video page.
+            path (str): Path to save the resultant video file.
+                Note: this is passed through a function to ensure the resultant
+                filename is safe.
+            stream_type (str): "Audio", "Video" or "V+A"
+            index (int, optional): Filename prefix for ordering. Defaults to 0.
+        """
         yt = YouTube(url)
         prefix = str(index) + "_"
         suffix = ".mp4"
@@ -37,6 +59,11 @@ class Downloader(object):
         stream.download(path, safe_title)
 
     def cli_run(self):
+        """Runs the Command-Line Interface version of YouTube Downloader.
+
+        Provides text prompts to enter URL and download path. This CLI version
+        will always download the video and audio streams.
+        """
         url = input("Enter Youtube URL: ")
         path = input("Enter download path: ")
         try:

@@ -15,6 +15,9 @@
 #     You should have received a copy of the GNU General Public License
 #     along with yt_downloader.  If not, see <https://www.gnu.org/licenses/>.
 
+"""ytdl.py: Main launcher for the gui version of YouTube Downloader
+"""
+
 from PyQt5.QtWidgets import QApplication
 
 from gui import YTDL_Window
